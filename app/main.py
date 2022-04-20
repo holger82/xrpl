@@ -89,8 +89,9 @@ async def account_info(account_id, currency: Optional[Currency] = settings.CURRE
                 })
  
         result['balance_baselines_xrp'] = float(result['balance_baselines_xrp']) + balance_xrp
-        result['balance_total'] = float(result['balance_baselines_xrp']) + float(result['balance_xrp'])
-        result['balance_total_fiat'] = round(float(result['balance_total']) * XRP_PER_FIAT,2)
+    
+    result['balance_total'] = float(result['balance_baselines_xrp']) + float(result['balance_xrp'])
+    result['balance_total_fiat'] = round(float(result['balance_total']) * XRP_PER_FIAT,2)
 
     #with open('out/json_result.json',"w") as f:
      #   f.write(json.dumps(result, indent=4))
