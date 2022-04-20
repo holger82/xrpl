@@ -82,7 +82,8 @@ async def account_info(account_id, currency: Optional[Currency] = settings.CURRE
                     'currency' : account_line.get('currency'),
                     'currency_readable' : currency_readable,
                     'issuer_account' : account_line.get('account'),
-                    'balance' : account_line.get('balance'),  
+                    'balance' : account_line.get('balance'),
+                    'value_per_token_in_xrp': xrp_per_token,
                     'balance_xrp' : balance_xrp,
                     'balance_fiat' : balance_fiat,
                     'currency_fiat' : CURRENCY
