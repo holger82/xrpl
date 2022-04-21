@@ -82,10 +82,10 @@ async def account_info(account_id, currency: Optional[Currency] = settings.CURRE
                     'currency' : account_line.get('currency'),
                     'currency_readable' : currency_readable,
                     'issuer_account' : account_line.get('account'),
-                    'balance' : account_line.get('balance'),
+                    'hold_quantity' : account_line.get('balance'),
                     'value_per_token_in_xrp': xrp_per_token,
-                    'balance_xrp' : balance_xrp,
-                    'balance_fiat' : balance_fiat,
+                    'value_xrp' : balance_xrp,
+                    'value_fiat' : balance_fiat,
                     'currency_fiat' : CURRENCY
                 })
  
@@ -94,12 +94,16 @@ async def account_info(account_id, currency: Optional[Currency] = settings.CURRE
     result['balance_total'] = float(result['balance_baselines_xrp']) + float(result['balance_xrp'])
     result['balance_total_fiat'] = round(float(result['balance_total']) * XRP_PER_FIAT,2)
 
-    #with open('out/json_result.json',"w") as f:
-     #   f.write(json.dumps(result, indent=4))
     return JSONResponse(result)
         
 
 def _get_avg_price_for_token(token, issuer_account):
+    """
+    Calculate an average price based on a number of offers
+
+    :param account: the adress on the xrp ledget to analyse
+    :return: api response
+    """
     offers = _get_offers_for_token(token, issuer_account).json()
     xrp_per_token_list = []
     for offer in offers['result']['offers']:
@@ -144,8 +148,8 @@ def _get_account_lines(account):
     """
     retrieve account lines from xrpl api
 
-    :param account: the adress
-    :return: response
+    :param account: the adress on the xrp ledget to analyse
+    :return: api response
     """
     logger.info(f'Getting account lines for account {account}')
     data ={
@@ -160,6 +164,12 @@ def _get_account_lines(account):
     
 
 def _query_ledger_api(data):
+    """
+    Generics function to query the xrpl ledger api.
+
+    :param data: The payload of the query to be executed
+    :return: api response
+    """
     logger.debug(f"Payload for call is {data}")
     try:
         response = requests.post(
@@ -175,6 +185,12 @@ def _query_ledger_api(data):
         logger.error(f'Unable to contact api: {err}')
 
 def _get_xrp_fiat_ratio(currency):
+    """
+    Retrieve the current value of xrp in the provided currency
+
+    :param currency: The currency id (such as EUR, USD,..)
+    :return: The the cost for one xrp token
+    """
     api_url = settings.COINSTAT_API_URL + f'coins/ripple?currency={currency}'
 
     try:
@@ -193,8 +209,14 @@ def _get_xrp_fiat_ratio(currency):
     except Exception as err:
         logger.error(f'Error when contacting coinstats api: {err}')
 
-def _get_offers_for_token(token, issuer_account):
-    offer_count = 10
+def _get_offers_for_token(token, issuer_account, offer_count = 10):
+    """
+    Retrieve offers for the provided token/currency
+
+    :param token: the technical name of the token
+    :param issuer_account: The issuer account of the token
+    :return: api response for the offers
+    """
     data = {
         "method": "book_offers",
         "params": [
